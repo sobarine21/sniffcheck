@@ -8,7 +8,7 @@ st.title("SniffR API - Individual Record Search")
 st.markdown("""
 This Streamlit app allows you to query the SniffR API for individual records.  
 Enter your search details below.  
-**Make sure to add your API key in Streamlit Secrets (`.streamlit/secrets.toml`) as `sniffr_api_key`.**
+**Add your API key via Streamlit secrets (in the cloud or settings UI) as `sniffr_api_key`.**
 """)
 
 # Search type options from the API doc
@@ -31,7 +31,7 @@ api_url = st.sidebar.text_input(
 api_key = st.secrets.get("sniffr_api_key", "")
 
 if not api_key:
-    st.sidebar.warning("API key not found in secrets. Please add it in .streamlit/secrets.toml as 'sniffr_api_key'")
+    st.sidebar.warning("API key not found in secrets. Please add it via Streamlit settings UI.")
 else:
     st.sidebar.success("API key loaded from secrets.")
 
@@ -84,6 +84,6 @@ if submit_btn:
             st.error(f"Error contacting API: {e}")
 
 st.markdown("---")
-st.markdown("#### Reference")
-st.image("image1", caption="SniffR API Endpoint and Request Body", use_column_width=True)
-st.image("image2", caption="SniffR API Response Example", use_column_width=True)
+st.markdown("#### API Docs Reference")
+st.markdown("- [SniffR API Endpoint and Request Body](#)")
+st.markdown("- [SniffR API Response Example](#)")
