@@ -2,82 +2,69 @@ import streamlit as st
 import requests
 import json
 
-st.set_page_config(page_title="SniffR API - Individual Record Search", layout="centered")
+st.set_page_config(page_title="Indiav1 Enforcement Check API", layout="centered")
 
-st.title("SniffR API - Individual Record Search")
+st.title("Indiav1 Enforcement Check API - Enforcement Record Search")
 st.markdown("""
-This Streamlit app allows you to query the SniffR API for individual records.  
-Enter your search details below.  
-**Add your API key via Streamlit secrets (in the cloud or settings UI) as `sniffr_api_key`.**
+This Streamlit app allows you to query the Indiav1 Enforcement Check API for enforcement records.  
+Add your JWT token and userId via Streamlit secrets as `indiav1_jwt_token` and `indiav1_user_id`.
 """)
-
-# Search type options from the API doc
-SEARCH_TYPES = {
-    "All fields": "all",
-    "PAN number": "pan",
-    "CIN number": "cin",
-    "DIN number": "din",
-    "Company name": "company_name",
-    "Director name": "director_name",
-}
 
 # Sidebar for API settings
 st.sidebar.header("API Settings")
 api_url = st.sidebar.text_input(
     "API Endpoint URL",
-    value="https://your-api-domain/functions/v1/sniffR",
-    help="Enter the full API URL for SniffR endpoint"
+    value="https://ljnzkgwbtqoxpztwupli.supabase.co/functions/v1/indiav1",
+    help="Enter the full API URL for Indiav1 Enforcement Check API"
 )
-api_key = st.secrets.get("sniffr_api_key", "")
+jwt_token = st.secrets.get("indiav1_jwt_token", "")
+user_id = st.secrets.get("indiav1_user_id", "")
 
-if not api_key:
-    st.sidebar.warning("API key not found in secrets. Please add it via Streamlit settings UI.")
+if not jwt_token or not user_id:
+    st.sidebar.warning("JWT Token or User ID not found in secrets. Please add them via Streamlit settings UI.")
 else:
-    st.sidebar.success("API key loaded from secrets.")
+    st.sidebar.success("JWT Token and User ID loaded from secrets.")
 
 # Main input form
-with st.form(key="sniffr_search_form"):
-    search_type_label = st.selectbox("Select Search Type", list(SEARCH_TYPES.keys()))
-    search_type = SEARCH_TYPES[search_type_label]
-    search_term = st.text_input(f"Enter {search_type_label}")
+with st.form(key="indiav1_search_form"):
+    search_type = st.selectbox("Select Search Type", ["partial", "exact"])
+    query = st.text_input("Enter search query (company name, CIN, PAN, etc.)")
     submit_btn = st.form_submit_button("Search")
 
 if submit_btn:
-    if not api_key or not api_url:
-        st.error("API key or endpoint URL missing. Please check the sidebar.")
-    elif not search_term:
-        st.error("Please enter a search term.")
+    if not jwt_token or not user_id or not api_url:
+        st.error("JWT token, user ID, or endpoint URL missing. Please check the sidebar.")
+    elif not query:
+        st.error("Please enter a search query.")
     else:
         payload = {
-            "search_term": search_term,
-            "search_type": search_type
+            "query": query,
+            "searchType": search_type,
+            "userId": user_id
         }
         headers = {
-            "Authorization": f"Bearer {api_key}",
+            "Authorization": f"Bearer {jwt_token}",
             "Content-Type": "application/json"
         }
         try:
             response = requests.post(api_url, headers=headers, data=json.dumps(payload))
             if response.ok:
                 data = response.json()
-                if data.get("success") and data.get("results"):
-                    st.success(f"Found {data.get('total_results', 0)} result(s) for '{search_term}'")
-                    for record in data["results"]:
+                st.success(f"API call successful in {data.get('execution_time', 'N/A')} seconds.")
+                total_matches = data.get('total_matches', 'N/A')
+                st.write(f"Total Matches: {total_matches}")
+                st.write("---")
+
+                results = data.get("results", [])
+                if results:
+                    for record in results:
+                        st.write(f"**Table Name:** {record.get('table_name', '')}")
+                        st.write(f"**Matched Field:** {record.get('matched_field', '')}")
+                        st.write(f"**Matched Value:** {record.get('matched_value', '')}")
+                        st.write(f"**Record Details:** {record.get('record', {})}")
                         st.write("---")
-                        st.write(f"**Type:** {record.get('type', '')}")
-                        st.write(f"**Company Name:** {record.get('company_name', '')}")
-                        st.write(f"**Director Name:** {record.get('director_name', '')}")
-                        st.write(f"**PAN:** {record.get('pan', '')}")
-                        st.write(f"**DIN:** {record.get('din', '')}")
-                        st.write(f"**CIN:** {record.get('cin', '')}")
-                        st.write(f"**Address:** {record.get('address', '')}")
-                        st.write(f"**Severity Level:** {record.get('severity_level', '')}")
-                        st.write(f"**Description:** {record.get('description', '')}")
-                        st.write(f"**Created At:** {record.get('created_at', '')}")
-                        st.write(f"**Source:** {record.get('source', '')}")
-                        st.write(f"**ID:** {record.get('id', '')}")
                 else:
-                    st.warning("No results found or API did not return the expected response.")
+                    st.warning("No enforcement matches found.")
             else:
                 st.error(f"Request failed: {response.status_code} - {response.text}")
         except Exception as e:
@@ -85,5 +72,4 @@ if submit_btn:
 
 st.markdown("---")
 st.markdown("#### API Docs Reference")
-st.markdown("- [SniffR API Endpoint and Request Body](#)")
-st.markdown("- [SniffR API Response Example](#)")
+st.markdown("- [Indiav1 Enforcement Check API Documentation](#)")
