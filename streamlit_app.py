@@ -51,27 +51,34 @@ if submit_btn:
             if response.ok:
                 data = response.json()
 
-                # DEBUG: Show full raw response for inspection
-                st.subheader("Raw API Response")
-                st.json(data)
+                # Properly display execution time and total matches
+                execution_time_ms = data.get('executionTimeMs', 'N/A')
+                total_matches = data.get('totalMatches', 'N/A')
 
-                st.success(f"API call successful in {data.get('execution_time', 'N/A')}.")
-
-                total_matches = data.get('total_matches', 'N/A')
+                st.success(f"API call successful in {execution_time_ms} ms.")
                 st.write(f"Total Matches: {total_matches}")
+                st.write(f"Tables Searched: {data.get('tablesSearched', 'N/A')}")
+                st.write(f"Tables With Matches: {data.get('tablesWithMatches', 'N/A')}")
                 st.write("---")
 
-                results = data.get("matches", [])  # Updated key
+                results = data.get("results", [])
 
-                if results:
-                    for record in results:
-                        st.write(f"**Table Name:** {record.get('table', '')}")
-                        st.write(f"**Matched Field:** {record.get('field', '')}")
-                        st.write(f"**Matched Value:** {record.get('value', '')}")
-                        st.json(record.get('record', {}))  # Pretty-print the detailed record
-                        st.write("---")
+                # Filter out any tables with no matches
+                results_with_matches = [table for table in results if table.get('matches')]
+
+                if results_with_matches:
+                    for table_result in results_with_matches:
+                        table_name = table_result.get('table', 'N/A')
+                        matches = table_result.get('matches', [])
+
+                        st.write(f"### Table: {table_name}")
+                        for idx, match in enumerate(matches, start=1):
+                            st.write(f"#### Match #{idx}")
+                            for key, value in match.items():
+                                st.write(f"**{key}:** {value}")
+                            st.write("---")
                 else:
-                    st.warning("No enforcement matches found.")
+                    st.warning("No enforcement matches found in any table.")
 
             else:
                 st.error(f"Request failed: {response.status_code} - {response.text}")
