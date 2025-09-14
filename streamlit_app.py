@@ -50,21 +50,29 @@ if submit_btn:
             response = requests.post(api_url, headers=headers, data=json.dumps(payload))
             if response.ok:
                 data = response.json()
-                st.success(f"API call successful in {data.get('execution_time', 'N/A')} seconds.")
+
+                # DEBUG: Show full raw response for inspection
+                st.subheader("Raw API Response")
+                st.json(data)
+
+                st.success(f"API call successful in {data.get('execution_time', 'N/A')}.")
+
                 total_matches = data.get('total_matches', 'N/A')
                 st.write(f"Total Matches: {total_matches}")
                 st.write("---")
 
-                results = data.get("results", [])
+                results = data.get("matches", [])  # Updated key
+
                 if results:
                     for record in results:
-                        st.write(f"**Table Name:** {record.get('table_name', '')}")
-                        st.write(f"**Matched Field:** {record.get('matched_field', '')}")
-                        st.write(f"**Matched Value:** {record.get('matched_value', '')}")
-                        st.write(f"**Record Details:** {record.get('record', {})}")
+                        st.write(f"**Table Name:** {record.get('table', '')}")
+                        st.write(f"**Matched Field:** {record.get('field', '')}")
+                        st.write(f"**Matched Value:** {record.get('value', '')}")
+                        st.json(record.get('record', {}))  # Pretty-print the detailed record
                         st.write("---")
                 else:
                     st.warning("No enforcement matches found.")
+
             else:
                 st.error(f"Request failed: {response.status_code} - {response.text}")
         except Exception as e:
