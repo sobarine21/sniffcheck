@@ -42,16 +42,28 @@ if submit_btn:
             if response.ok:
                 data = response.json()
 
+                # Extract stats safely
+                execution_time = data.get("executionTimeMs", "N/A")
+                total_matches = data.get("totalMatches", "N/A")
+
+                tables_with_matches = data.get("tablesWithMatches", [])
+                if isinstance(tables_with_matches, int):
+                    tables_count = tables_with_matches
+                elif isinstance(tables_with_matches, list):
+                    tables_count = len(tables_with_matches)
+                else:
+                    tables_count = "N/A"
+
                 # Show quick stats
                 stats_col1, stats_col2, stats_col3 = st.columns(3)
-                stats_col1.metric("Execution Time (ms)", data.get("executionTimeMs", "N/A"))
-                stats_col2.metric("Total Matches", data.get("totalMatches", "N/A"))
-                stats_col3.metric("Tables With Matches", len(data.get("tablesWithMatches", [])))
+                stats_col1.metric("Execution Time (ms)", execution_time)
+                stats_col2.metric("Total Matches", total_matches)
+                stats_col3.metric("Tables With Matches", tables_count)
 
                 st.markdown("---")
 
                 results = data.get("results", [])
-                results_with_matches = [t for t in results if t.get("matches")]
+                results_with_matches = [t for t in results if isinstance(t.get("matches"), list) and t.get("matches")]
 
                 if results_with_matches:
                     for table_result in results_with_matches:
@@ -61,17 +73,20 @@ if submit_btn:
                         st.subheader(f"📂 Table: {table_name}")
 
                         # Convert matches into dataframe
-                        df = pd.DataFrame(matches)
-                        st.dataframe(df, use_container_width=True)
+                        if isinstance(matches, list) and matches:
+                            df = pd.DataFrame(matches)
+                            st.dataframe(df, use_container_width=True)
 
-                        # Add download button
-                        csv = df.to_csv(index=False).encode("utf-8")
-                        st.download_button(
-                            label=f"⬇️ Download {table_name} Matches",
-                            data=csv,
-                            file_name=f"{table_name}_matches.csv",
-                            mime="text/csv"
-                        )
+                            # Add download button
+                            csv = df.to_csv(index=False).encode("utf-8")
+                            st.download_button(
+                                label=f"⬇️ Download {table_name} Matches",
+                                data=csv,
+                                file_name=f"{table_name}_matches.csv",
+                                mime="text/csv"
+                            )
+                        else:
+                            st.info("ℹ️ No valid matches in this table.")
                 else:
                     st.warning("⚠️ No enforcement matches found in any table.")
             else:
