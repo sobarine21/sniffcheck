@@ -27,7 +27,6 @@ else:
 
 # Main input form
 with st.form(key="indiav1_search_form"):
-    search_type = st.selectbox("Select Search Type", ["partial", "exact"])
     query = st.text_input("Enter search query (company name, CIN, PAN, etc.)")
     submit_btn = st.form_submit_button("Search")
 
@@ -39,7 +38,6 @@ if submit_btn:
     else:
         payload = {
             "query": query,
-            "searchType": search_type,
             "userId": user_id
         }
         headers = {
