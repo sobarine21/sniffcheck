@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import json
 import pandas as pd
+import os
 
 # ---------------- UI Setup ----------------
 st.set_page_config(page_title="SniffR 🐾 by Ever Tech", layout="wide")
@@ -11,13 +12,13 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Load secrets directly (no sidebar)
-api_url = st.secrets.get("indiav1_api_url", "")
-jwt_token = st.secrets.get("indiav1_jwt_token", "")
-user_id = st.secrets.get("indiav1_user_id", "")
+# Load environment variables (Render)
+api_url = os.environ.get("INDIAV1_API_URL", "")
+jwt_token = os.environ.get("INDIAV1_JWT_TOKEN", "")
+user_id = os.environ.get("INDIAV1_USER_ID", "")
 
 if not api_url or not jwt_token or not user_id:
-    st.error("❌ API URL, JWT Token or User ID not found in secrets. Please check your Streamlit secrets config.")
+    st.error("❌ API URL, JWT Token or User ID not found in environment variables. Please set them in Render Dashboard.")
 
 # ---------------- Search Form ----------------
 st.markdown("## 🚀 Run a Search")
@@ -28,7 +29,7 @@ with st.form(key="indiav1_search_form"):
 # ---------------- API Call ----------------
 if submit_btn:
     if not api_url or not jwt_token or not user_id:
-        st.error("API URL, JWT token, or user ID missing. Please check your secrets.")
+        st.error("API URL, JWT token, or user ID missing. Please check your environment variables.")
     elif not query.strip():
         st.error("Please enter a search query.")
     else:
