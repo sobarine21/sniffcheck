@@ -11,85 +11,13 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Sidebar for API settings
-st.sidebar.header("⚙️ API Settings")
+# Load secrets directly (no sidebar)
 api_url = st.secrets.get("indiav1_api_url", "")
 jwt_token = st.secrets.get("indiav1_jwt_token", "")
 user_id = st.secrets.get("indiav1_user_id", "")
 
 if not api_url or not jwt_token or not user_id:
-    st.sidebar.error("❌ API URL, JWT Token or User ID not found in secrets.")
-else:
-    st.sidebar.success("✅ Secrets loaded successfully")
-
-# ---------------- Intro Write-up ----------------
-st.markdown("## 📖 Overview")
-st.write("""
-The **India-v1 Edge Function** is a focused enforcement screening service that searches across 
-**29 key regulatory and enforcement databases** with emphasis on Indian markets and global sanctions.  
-It provides **parallel search execution** with exact and partial matching options.
-""")
-
-st.markdown("## 🏗️ Architecture")
-st.write("""
-- **Function Name**: `indiav1`  
-- **Search Method**: Parallel execution across all tables  
-- **Authentication**: Required user validation via `invisionid` table  
-- **Response Time**: Optimized for sub-second performance  
-- **Coverage**: Indian enforcement + key global sanctions
-""")
-
-with st.expander("📚 Database Coverage (29 Tables)", expanded=False):
-    st.markdown("""
-### 🇮🇳 Indian Stock Exchanges & Trading (10 databases)
-- **NSE Under Liquidations** (`nse_under_liquidations`)  
-- **NSE Suspended Companies** (`nse_suspended`)  
-- **NSE Banned/Debarred** (`nse_banned_debared`)  
-- **Delisted Under Liquidations** (`delisted_under_liquidations_nse`)  
-- **CRIP NSE Cases** (`crip_nse_cases`)  
-- **NSE Defaulting Clients** (`defaulting_clients_nse`)  
-- **NSE Defaulting Client Database** (`Defaulting_Client_Database nse_`)  
-- **NCDEX Defaulting Clients** (`defaulting_clients_ncdex`)  
-- **MCX Defaulting Clients** (`defaulting_clients_mcx`)  
-- **BSE Defaulting Clients** (`defaulting_clients_bse`)  
-
-### 🇮🇳 Indian Regulatory Bodies (8 databases)
-- **SEBI Circulars** (`sebi_circulars`)  
-- **SEBI Deactivated** (`SEBI_DEACTIVATED`)  
-- **Archive SEBI Debarred** (`Archive SEBI DEBARRED entities`)  
-- **Disqualified Directors** (`disqualified_directors`)  
-- **Directors Struck Off** (`directors_struckoff`)  
-- **Companies IBC Moratorium** (`Companies_IBC_Moratorium_Debt`)  
-- **Consolidated Legacy** (`consolidatedLegacyByPRN`)  
-- **Banned by Competent Authorities** (`banned by  Competent Authorities India`)  
-- **UAPA Banned Organizations** (`banned _list_uapa`)  
-
-### 🏛️ IBBI (Insolvency & Bankruptcy Board) (5 databases)
-- **IBBI NCLT Orders** (`ibbi_nclt_orders`)  
-- **IBBI Supreme Court Orders** (`ibbi_supreme_court_orders`)  
-- **IBBI Orders** (`ibbi_orders`)  
-- **IBBI NCLAT Orders** (`ibbi_nclat_orders`)  
-- **IBBI High Court Orders** (`ibbi_high_courts_orders`)  
-
-### 🌍 Global Sanctions & International (4 databases)
-- **Global SDN (OFAC)** (`GLOBAL_SDN`)  
-- **World Bank Sanctioned** (`world_bank_sanctioned`)  
-- **Euro Sanctions** (`euro_sanction`)  
-- **ESMA Sanctions** (`esma_sanctions`)  
-
-### 🗳️ Political & Public Data (1 database)
-- **Indian Local Politicians** (`indian_local_politicians`)  
-
-**Total Coverage**: 29 Databases
-""")
-
-st.markdown("## 🔎 Search Features")
-st.write("""
-- **Exact Search**: `searchType: "exact"` (Perfect matches only)  
-- **Partial Search**: `searchType: "partial"` (Contains-based, default)  
-- **Multi-field Matching**: Company names, PAN numbers, Director names, Case IDs  
-- **Authentication & Security**: Requires valid `userId` + Authorization header  
-""")
+    st.error("❌ API URL, JWT Token or User ID not found in secrets. Please check your Streamlit secrets config.")
 
 # ---------------- Search Form ----------------
 st.markdown("## 🚀 Run a Search")
@@ -151,3 +79,72 @@ if submit_btn:
 
         except Exception as e:
             st.error(f"🚨 Error contacting API: {e}")
+
+# ---------------- Intro Write-up ----------------
+st.markdown("## 📖 Overview")
+st.write("""
+The **India-v1 Edge Function** is a focused enforcement screening service that searches across 
+**29 key regulatory and enforcement databases** with emphasis on Indian markets and global sanctions.  
+It provides **parallel search execution** with exact and partial matching options.
+""")
+
+st.markdown("## 🏗️ Architecture")
+st.write("""
+- **Function Name**: `indiav1`  
+- **Search Method**: Parallel execution across all tables  
+- **Authentication**: Required user validation via `invisionid` table  
+- **Response Time**: Optimized for sub-second performance  
+- **Coverage**: Indian enforcement + key global sanctions
+""")
+
+with st.expander("📚 Database Coverage (29 Tables)", expanded=False):
+    st.markdown("""
+### 🇮🇳 Indian Stock Exchanges & Trading (10 databases)
+- NSE Under Liquidations (`nse_under_liquidations`)  
+- NSE Suspended Companies (`nse_suspended`)  
+- NSE Banned/Debarred (`nse_banned_debared`)  
+- Delisted Under Liquidations (`delisted_under_liquidations_nse`)  
+- CRIP NSE Cases (`crip_nse_cases`)  
+- NSE Defaulting Clients (`defaulting_clients_nse`)  
+- NSE Defaulting Client Database (`Defaulting_Client_Database nse_`)  
+- NCDEX Defaulting Clients (`defaulting_clients_ncdex`)  
+- MCX Defaulting Clients (`defaulting_clients_mcx`)  
+- BSE Defaulting Clients (`defaulting_clients_bse`)  
+
+### 🇮🇳 Indian Regulatory Bodies (8 databases)
+- SEBI Circulars (`sebi_circulars`)  
+- SEBI Deactivated (`SEBI_DEACTIVATED`)  
+- Archive SEBI Debarred (`Archive SEBI DEBARRED entities`)  
+- Disqualified Directors (`disqualified_directors`)  
+- Directors Struck Off (`directors_struckoff`)  
+- Companies IBC Moratorium (`Companies_IBC_Moratorium_Debt`)  
+- Consolidated Legacy (`consolidatedLegacyByPRN`)  
+- Banned by Competent Authorities (`banned by  Competent Authorities India`)  
+- UAPA Banned Organizations (`banned _list_uapa`)  
+
+### 🏛️ IBBI (Insolvency & Bankruptcy Board) (5 databases)
+- IBBI NCLT Orders (`ibbi_nclt_orders`)  
+- IBBI Supreme Court Orders (`ibbi_supreme_court_orders`)  
+- IBBI Orders (`ibbi_orders`)  
+- IBBI NCLAT Orders (`ibbi_nclat_orders`)  
+- IBBI High Court Orders (`ibbi_high_courts_orders`)  
+
+### 🌍 Global Sanctions & International (4 databases)
+- Global SDN (OFAC) (`GLOBAL_SDN`)  
+- World Bank Sanctioned (`world_bank_sanctioned`)  
+- Euro Sanctions (`euro_sanction`)  
+- ESMA Sanctions (`esma_sanctions`)  
+
+### 🗳️ Political & Public Data (1 database)
+- Indian Local Politicians (`indian_local_politicians`)  
+
+**Total Coverage**: 29 Databases
+""")
+
+st.markdown("## 🔎 Search Features")
+st.write("""
+- **Exact Search**: `searchType: "exact"` (Perfect matches only)  
+- **Partial Search**: `searchType: "partial"` (Contains-based, default)  
+- **Multi-field Matching**: Company names, PAN numbers, Director names, Case IDs  
+- **Authentication & Security**: Requires valid `userId` + Authorization header  
+""")
